@@ -30,22 +30,22 @@ class VoxtralModel:
             self.model = _MockModel()
             self.current_model_name = model_id
 
-    def transcribe_chunk(self, audio_file_path):
-        """Transcribes a given audio file path."""
+    def transcribe_array(self, audio_data):
+        """Transcribes a given numpy audio array."""
         if not self.model:
             raise RuntimeError("Model not loaded. Call load_model first.")
             
-        # We perform a standard transcription on the chunk
         try:
-            result = self.model.generate(audio_file_path)
+            # We assume the model accepts numpy arrays for streaming inference.
+            result = self.model.generate(audio_data)
             return result.text
         except Exception as e:
             raise RuntimeError(f"Transcription failed: {e}")
 
 class _MockModel:
     """A mock model to allow testing without mlx_audio installed."""
-    def generate(self, audio_file):
+    def generate(self, audio_data):
         class Result:
             def __init__(self, text):
                 self.text = text
-        return Result(" [Mock Transcription Output] ")
+        return Result(" [Mock Streaming Output] ")

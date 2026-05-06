@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 from src.model import VoxtralModel, _MockModel
 
 def test_model_init():
@@ -53,20 +54,20 @@ def test_load_model_already_loaded(mocker):
     model.load_model("4bit (Smaller/Faster)")
     assert model.model is first_model_instance # Should not reload
 
-def test_transcribe_chunk_not_loaded():
+def test_transcribe_array_not_loaded():
     model = VoxtralModel()
     with pytest.raises(RuntimeError, match="Model not loaded"):
-        model.transcribe_chunk("dummy.wav")
+        model.transcribe_array(np.zeros(16000))
 
-def test_transcribe_chunk_success(mocker):
+def test_transcribe_array_success(mocker):
     mocker.patch.dict("sys.modules", {"mlx_audio": None})
     model = VoxtralModel()
     model.load_model("4bit (Smaller/Faster)")
     
-    result = model.transcribe_chunk("dummy.wav")
-    assert "Mock Transcription Output" in result
+    result = model.transcribe_array(np.zeros(16000))
+    assert "Mock Streaming Output" in result
 
-def test_transcribe_chunk_failure(mocker):
+def test_transcribe_array_failure(mocker):
     mocker.patch.dict("sys.modules", {"mlx_audio": None})
     model = VoxtralModel()
     model.load_model("4bit (Smaller/Faster)")
@@ -75,4 +76,4 @@ def test_transcribe_chunk_failure(mocker):
     mocker.patch.object(model.model, 'generate', side_effect=Exception("Generation error"))
     
     with pytest.raises(RuntimeError, match="Transcription failed: Generation error"):
-        model.transcribe_chunk("dummy.wav")
+        model.transcribe_array(np.zeros(16000))
